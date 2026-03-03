@@ -1,5 +1,5 @@
 node{
-    def mavenHome: tool name: 'Maven 3.9.12', type: 'maven'
+    def mavenHome= tool name: 'Maven 3.9.12', type: 'maven'
     def tomcat_ip = '13.235.18.8'
     stage("maven clean package"){
         sh "${mavenHome}/bin/mvn clean package"
