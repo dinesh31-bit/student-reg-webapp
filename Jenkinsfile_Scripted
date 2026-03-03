@@ -1,9 +1,9 @@
 node{
     def mavenHome= tool name: 'Maven 3.9.12', type: 'maven'
     def tomcat_ip = '13.235.18.8'
-    stage("git clone"){
-        git brach: 'main', credentialsId:'dinesh31bitgit', url:'https://github.com/dinesh31-bit/student-reg-webapp.git'
-    }
+    // stage("git clone"){
+    //     git brach: 'main', credentialsId:'dinesh31bitgit', url:'https://github.com/dinesh31-bit/student-reg-webapp.git'
+    // }
     stage("maven clean package"){
         sh "${mavenHome}/bin/mvn clean package"
     }
@@ -20,8 +20,8 @@ node{
         sshagent(['tomcat-shh-credentials']) {
             sh """
                 ssh -o strightHostKeyChecking=no ec2-user@${tomcat_ip} sudo systemctl stop tomcat
-                ssh -o strightHostKeyChecking=no ec2-user@${tomcat_ip} rm -f /opt/tomcat/webhook/student-reg-webapp.war
-                scp -o strightHostKeyChecking=no target/student-reg-webapp.war ec2-user@${tomcat_ip}:/opt/tomcat/webapp/student-reg-webapp.war
+                ssh -o strightHostKeyChecking=no ec2-user@${tomcat_ip} rm -f /opt/tomcat/webapps/student-reg-webapp.war
+                scp -o strightHostKeyChecking=no target/student-reg-webapp.war ec2-user@${tomcat_ip}:/opt/tomcat/webapps/student-reg-webapp.war
                 ssh -o strightHostKeyChecking=no ec2-user@${tomcat_ip} sudo systemctl start tomcat
             """
         }
