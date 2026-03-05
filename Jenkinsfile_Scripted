@@ -1,7 +1,7 @@
 properties([pipelineTriggers([githubPush()])])
 node{
     def mavenHome= tool name: 'Maven 3.9.12', type: 'maven'
-    def tomcat_ip = '13.201.60.243'
+    def tomcat_ip = '3.111.246.225'
     try{
         stage("git clone"){
             git branch: 'main', credentialsId:'dinesh31bitgit', url:'https://github.com/dinesh31-bit/student-reg-webapp.git'
