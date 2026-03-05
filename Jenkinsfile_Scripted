@@ -39,7 +39,7 @@ node{
         if (buildStatus == 'FAILURE'){
             colorcode='DANGER'
         }
-        slackSend channel: 'devops-notification',color: "${colorcode}", message:  "${env.JOB_NAME}-${buildstatus}-${env.BUILD_NUMBER}. Check your jod here:${env.BUILD_URL}"
+        slackSend channel: 'devops-notification',color: "${colorcode}", message:  "${env.JOB_NAME}-${buildStatus}-${env.BUILD_NUMBER}. Check your jod here:${env.BUILD_URL}"
          emailext body: """
                     <html>
                     <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
