@@ -38,6 +38,9 @@ node{
                 """
             }
         }
+        stage("test code"){
+            build job: 'test code', parameters: [string(name: 'TEST_URL', value: 'http://52.66.208.131:8080/student-reg-webapp/')]
+        }
     }
     catch(err){
         currentBuild.result='FAILURE'
