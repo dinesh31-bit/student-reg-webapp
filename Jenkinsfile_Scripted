@@ -8,7 +8,7 @@ node{
             git branch: 'main', credentialsId:'dinesh31bitgit', url:'https://github.com/dinesh31-bit/student-reg-webapp.git'
         }
         stage("mvn clean and verify"){
-        parllel(
+        parallel(
             "maven clean package":{
                     stage("maven clean package"){
                         sh "echo 'maven clean package'"
