@@ -7,6 +7,7 @@ node{
         stage("git clone"){
             git branch: 'main', credentialsId:'dinesh31bitgit', url:'https://github.com/dinesh31-bit/student-reg-webapp.git'
         }
+        stage("mvn clean and verify"){
         parllel(
             "maven clean package":{
                     stage("maven clean package"){
@@ -22,6 +23,7 @@ node{
                     }
             }
         )
+        }
         stage("maven clean deploy"){
             sh "${mavenHome}/bin/mvn clean deploy"
         }
