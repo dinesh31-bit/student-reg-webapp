@@ -7,17 +7,21 @@ node{
         stage("git clone"){
             git branch: 'main', credentialsId:'dinesh31bitgit', url:'https://github.com/dinesh31-bit/student-reg-webapp.git'
         }
-       
+        parllel(
+            "maven clean package":{
                     stage("maven clean package"){
                         sh "echo 'maven clean package'"
                         sh "${mavenHome}/bin/mvn clean package"
                     }
+            },
+            "mvn clean verify":{
                     stage("maven clean verify"){
                         withCredentials([string(credentialsId: 'SonarQube', variable: 'sonar_qube')]) {
                             sh "${mavenHome}/bin/mvn clean verify sonar:sonar -Dsonar.token=${sonar_qube}"
                         }
                     }
-        
+            }
+        )
         stage("maven clean deploy"){
             sh "${mavenHome}/bin/mvn clean deploy"
         }
