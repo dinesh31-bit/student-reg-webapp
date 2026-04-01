@@ -4,7 +4,7 @@ pipeline{
         maven 'Maven 3.9.12'
     }
     parameters {
-        string(name: 'TOMCAT_SERVER_IPS', defaultValue: '3.109.47.166,13.234.186.239,43.205.203.205', description: 'Comma-separated list of Tomcat server IPs')
+        string(name: 'TOMCAT_SERVER_IPS', defaultValue: '52.66.32.232,65.2.130.205,13.235.135.254', description: 'Comma-separated list of Tomcat server IPs')
     }
     stages{
         stage("git clone"){
@@ -17,18 +17,18 @@ pipeline{
                  sh "mvn clean package"
              }
          }
-        // stage("sonar scan"){
-        //     steps{
-        //         withCredentials([string(credentialsId: 'SonarQube', variable: 'sonar')]) {
-        //             sh "mvn clean verify sonar:sonar -Dsonar.token=${sonar}"
-        //         }
-        //     }
-        // }
-        // stage("store code in nexus"){
-        //     steps{
-        //         sh "mvn clean deploy"
-        //     }
-        // }
+        stage("sonar scan"){
+            steps{
+                withCredentials([string(credentialsId: 'SonarQube', variable: 'sonar')]) {
+                    sh "mvn clean verify sonar:sonar -Dsonar.token=${sonar}"
+                }
+            }
+        }
+        stage("store code in nexus"){
+            steps{
+                sh "mvn clean deploy"
+            }
+        }
         stage("deploy to tomcat server"){
             steps{
                 script{
