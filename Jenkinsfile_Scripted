@@ -39,7 +39,7 @@ node{
             }
         }
         stage("test code"){
-            build job: 'test code', parameters: [string(name: 'TEST_URL', value: 'http://13.233.184.166:8080/student-reg-webapp/')]
+            build job: 'test code', parameters: [string(name: 'TEST_URL', value: 'http://13.235.135.254:8080/student-reg-webapp/')]
         }
     }
     catch(err){
