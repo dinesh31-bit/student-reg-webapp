@@ -1,3 +1,10 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: test-ns
+  labels:
+    app: student-reg-webapp
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
