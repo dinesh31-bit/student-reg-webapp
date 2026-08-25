@@ -3,6 +3,9 @@ pipeline{
     tools {
         maven 'Maven-3.9.16'
     }
+    triggers{
+       githubPush()
+    }
     environment{
         IMAGE_REGISTRY_ENDPOINT= "291189769169.dkr.ecr.ap-south-1.amazonaws.com"
         IMAGE_REPOSITORY_NAME= "student-reg-webapp"
