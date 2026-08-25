@@ -1,84 +1,74 @@
-pipeline {
+pipeline{
     agent any
-
-    triggers {
-       githubPush()
-     }
-
-    options {
-      buildDiscarder logRotator(numToKeepStr: '5')
-      timeout(time: 10, unit: 'MINUTES')
-      disableConcurrentBuilds()
-    }
-    
-    environment {
-        AWS_REGION = "ap-south-1"
-        EKS_CLUSTER_NAME = "eks-demo"
-        IMAGE_REGISTRY_ENDPOINT = "775694652978.dkr.ecr.ap-south-1.amazonaws.com"
-        IMAGE_REPOSITORY_NAME = "student-reg-webapp"
-        IMAGE_REGISTRY = "${IMAGE_REGISTRY_ENDPOINT}/${IMAGE_REPOSITORY_NAME}"
-    }
-
     tools {
-        maven 'Maven-3.9.10'
+        maven 'Maven-3.9.16'
     }
-
-    stages {
-
-      stage("Checkout Code"){
-           steps {
-               git branch: 'development', credentialsId: 'GitHubCred', url: 'https://github.com/Rushi-Technologies/student-reg-webapp.git'
-           }
-       }
-
-      stage("Run Unit Tests"){
-           steps {
-               sh "mvn clean test"
-           }
-       } 
-
-
-
-      stage("Maven Clean Package"){
-           steps {
-               sh "mvn clean package"
-           }
-       }
-
-
-        stage("Build Docker Image"){
-             steps {
-                 sh "docker build -t ${IMAGE_REGISTRY}:$BUILD_NUMBER ."
-             }
-         }
-         
-
-        stage("Update Image Tag in K8s Manifset"){
-            steps {
-               sh """
-                   sed -i "s/IMAGE_TAG/$BUILD_NUMBER/g" k8s_resources/deployment.yaml
-               """
+    environment{
+        IMAGE_REGISTRY_ENDPOINT= "291189769169.dkr.ecr.ap-south-1.amazonaws.com"
+        IMAGE_REPOSITORY_NAME= "student-reg-webapp"
+        IMAGE_REGISTRY= "${IMAGE_REGISTRY_ENDPOINT}/${IMAGE_REPOSITORY_NAME}"
+        TRIVY_CACHE_DIR = "${WORKSPACE}/.trivycache"
+        TMPDIR = "${WORKSPACE}/.trivytmp"
+        AWS_REGION = "ap-south-1"
+        EKS_CLUSTER_NAME= "EKS_cluster"
+    }
+    stages{
+        stage("git clone"){
+            steps{
+                git branch: 'main', credentialsId: 'github', url: 'https://github.com/dinesh31-bit/student-reg-webapp'
             }
         }
-        
-        stage("Push Docker Image to ECR"){
-             steps {
-                     sh """
-                         aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${IMAGE_REGISTRY_ENDPOINT}
-                         docker push ${IMAGE_REGISTRY}:$BUILD_NUMBER
-                     """
-             }
-         }
-         
-         stage("Deploy to Kubernetes"){
-             steps {
-                 sh """
-                     aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}
-                     kubectl apply -f k8s_resources/
-                 """
-             }
-         }
-       
+        stage("maven test"){
+            steps{
+                sh "mvn clean test"
+            }
+        }
+        stage("package"){
+            steps{
+                sh "mvn clean package"
+            }
+        }
+        stage("sonar scan"){
+            steps{
+                withSonarQubeEnv("Sonar_Qube"){
+                    sh "mvn sonar:sonar"
+                }
+            }
+        }
+        stage("docker build"){
+            steps{
+                sh "docker build -t ${IMAGE_REGISTRY}:$BUILD_NUMBER ."
+            }
+        }
+        stage(" Scan Docker Image"){
+            steps {
+                sh "mkdir -p ${TRIVY_CACHE_DIR} || true"
+                sh "mkdir -p ${TMPDIR} || true"
+                sh "trivy image --cache-dir ${TRIVY_CACHE_DIR} --severity HIGH,CRITICAL ${IMAGE_REGISTRY}:$BUILD_NUMBER"
+           }
+        }
+        stage("docker push to ECR"){
+            steps{
+                sh """
+                aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 291189769169.dkr.ecr.ap-south-1.amazonaws.com
+                docker push ${IMAGE_REGISTRY}:$BUILD_NUMBER
+                """
+            }
+        }
+        stage("edit deployment in git"){
+            steps{
+                sh '''
+                sed -i "s/IMAGE_TAG/$BUILD_NUMBER/g" k8s_resources/deployment.yaml
+                '''
+            }
+        }
+        stage("build k8s"){
+            steps{
+                sh """
+                aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}
+                kubectl apply -f k8s_resources/
+                """
+            }
+        }
     }
-       
 }
